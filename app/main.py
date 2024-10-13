@@ -1,5 +1,7 @@
 import socket  # socket module is used to create a socket object that can communicate with other machines. Socket is basically an endpoint that handles communication between machines and processes. It is a combination of IP address and port number.
-from header import DnsHeader
+from app.utils.header import (
+    DnsHeader,
+)
 
 
 def main():
@@ -14,7 +16,8 @@ def main():
     while True:
         try:
             buf, source = udp_socket.recvfrom(512)
-            print(f"Received data from {source}: {buf}")
+            buf_data = DnsHeader.from_bytes(data=buf[:12])
+            print(f"Received data from {source}: {buf_data}")
             header = DnsHeader(
                 id=1234,
                 qr=1,

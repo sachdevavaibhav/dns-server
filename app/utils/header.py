@@ -44,7 +44,7 @@ class DnsHeader:
             | self.rcode
         )
         return struct.pack(
-            ">HHHHHH",
+            "!6H",
             self.id,
             flags,
             self.qdcount,
@@ -55,12 +55,8 @@ class DnsHeader:
 
     @staticmethod
     def from_bytes(data):
-        id, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount, nscount, arcount = (
-            struct.unpack(">HHHHHH", data)
-        )
-        return DnsHeader(
-            id, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount, nscount, arcount
-        )
+        decoded_resp = struct.unpack("!6H", data)
+        return decoded_resp
 
     def __str__(self):
         return f"id={self.id}, qr={self.qr}, opcode={self.opcode}, aa={self.aa}, tc={self.tc}, rd={self.rd}, ra={self.ra}, z={self.z}, rcode={self.rcode}, qdcount={self.qdcount}, ancount={self.ancount}, nscount={self.nscount}, arcount={self.arcount}"
