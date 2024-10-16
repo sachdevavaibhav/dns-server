@@ -2,6 +2,7 @@ import socket  # socket module is used to create a socket object that can commun
 from app.utils.header import (
     DnsHeader,
 )
+from app.utils.question import Question
 
 
 def main():
@@ -28,13 +29,14 @@ def main():
                 ra=0,
                 z=0,
                 rcode=0,
-                qdcount=0,
+                qdcount=1,
                 ancount=0,
                 nscount=0,
                 arcount=0,
             )
-            response = header.to_bytes()
-
+            question = Question(qname="codecrafters.io", qtype=1, qclass=1)
+            response = header.to_bytes() + question.to_bytes()
+            print(f"Sending response: {response}")
             udp_socket.sendto(response, source)
         except Exception as e:
             print(f"Error receiving data: {e}")
