@@ -58,6 +58,28 @@ class DnsHeader:
         decoded_resp = struct.unpack("!6H", data)
         return decoded_resp
 
+    @staticmethod
+    def extract_dns_flags(flag):
+        qr = (flag >> 15) & 0x1
+        opcode = (flag >> 11) & 0xF
+        aa = (flag >> 10) & 0x1
+        tc = (flag >> 9) & 0x1
+        rd = (flag >> 8) & 0x1
+        ra = (flag >> 7) & 0x1
+        z = (flag >> 4) & 0x7
+        rcode = flag & 0xF
+
+        return {
+            "qr": qr,
+            "opcode": opcode,
+            "aa": aa,
+            "tc": tc,
+            "rd": rd,
+            "ra": ra,
+            "z": z,
+            "rcode": rcode,
+        }
+
     def __str__(self):
         return f"id={self.id}, qr={self.qr}, opcode={self.opcode}, aa={self.aa}, tc={self.tc}, rd={self.rd}, ra={self.ra}, z={self.z}, rcode={self.rcode}, qdcount={self.qdcount}, ancount={self.ancount}, nscount={self.nscount}, arcount={self.arcount}"
 

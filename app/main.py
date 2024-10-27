@@ -20,16 +20,18 @@ def main():
             buf, source = udp_socket.recvfrom(512)
             buf_data = DnsHeader.from_bytes(data=buf[:12])
             print(f"Received data from {source}: {buf_data}")
+            flags = DnsHeader.extract_dns_flags(buf_data[1])
+            print(flags)
             header = DnsHeader(
-                id=1234,
+                id=buf_data[0],
                 qr=1,
-                opcode=0,
+                opcode=flags["opcode"],
                 aa=0,
                 tc=0,
-                rd=0,
+                rd=flags["rd"],
                 ra=0,
                 z=0,
-                rcode=0,
+                rcode=0 if flags["opcode"] == 0 else 4,
                 qdcount=1,
                 ancount=1,
                 nscount=0,
