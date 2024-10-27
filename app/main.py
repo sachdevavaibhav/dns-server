@@ -3,6 +3,7 @@ from app.utils.header import (
     DnsHeader,
 )
 from app.utils.question import Question
+from app.utils.answer import Answer
 
 
 def main():
@@ -30,12 +31,20 @@ def main():
                 z=0,
                 rcode=0,
                 qdcount=1,
-                ancount=0,
+                ancount=1,
                 nscount=0,
                 arcount=0,
             )
             question = Question(qname="codecrafters.io", qtype=1, qclass=1)
-            response = header.to_bytes() + question.to_bytes()
+            answer = Answer(
+                name="codecrafters.io",
+                record_type=1,
+                domain_class=1,
+                ttl=60,
+                rdlength=4,
+                rdata="8.8.8.8",
+            )
+            response = header.to_bytes() + question.to_bytes() + answer.to_bytes()
             print(f"Sending response: {response}")
             udp_socket.sendto(response, source)
         except Exception as e:
