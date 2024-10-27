@@ -18,3 +18,19 @@ class Question:
         for part in parts:
             result += struct.pack("B", len(part)) + part.encode("ascii")
         return result + b"\x00"
+
+    def __parse_qname(self, data, start):
+        parts = []
+        while True:
+            length = data[start]
+            if length == 0:
+                break
+            parts.append(data[start + 1 : start + 1 + length].decode("ascii"))
+            start += 1 + length
+        return ".".join(parts), start + 1
+
+    @staticmethod
+    def from_bytes(data):
+        qname, start = Question.__parse_qname(Question, data, 0)
+        qtype, qclass = struct.unpack(">HH", data[start : start + 4])
+        return (qname, qtype, qclass)

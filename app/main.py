@@ -18,8 +18,11 @@ def main():
     while True:
         try:
             buf, source = udp_socket.recvfrom(512)
+            print(buf[12:])
             buf_data = DnsHeader.from_bytes(data=buf[:12])
-            print(f"Received data from {source}: {buf_data}")
+            buf_question = Question.from_bytes(data=buf[12:])
+            print(buf_question)
+            # print(f"Received data from {source}: {buf_data}")
             flags = DnsHeader.extract_dns_flags(buf_data[1])
             print(flags)
             header = DnsHeader(
@@ -37,9 +40,11 @@ def main():
                 nscount=0,
                 arcount=0,
             )
-            question = Question(qname="codecrafters.io", qtype=1, qclass=1)
+            question = Question(
+                qname=buf_question[0], qtype=buf_question[1], qclass=buf_question[2]
+            )
             answer = Answer(
-                name="codecrafters.io",
+                name=buf_question[0],
                 record_type=1,
                 domain_class=1,
                 ttl=60,
