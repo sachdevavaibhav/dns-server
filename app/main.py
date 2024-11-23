@@ -26,15 +26,7 @@ def main():
             log.debug(f"parsed questions: {[q.__dict__ for q in parsed_questions]}")
             flags = DnsHeader.extract_dns_flags(buf_data[1])
             log.debug(f"parsed flags: {flags}")
-            # answer = Answer(
-            #     name=buf_question[0],
-            #     record_type=1,
-            #     domain_class=1,
-            #     ttl=60,
-            #     rdlength=4,
-            #     rdata="8.8.8.8",
-            # )
-            rdata_options = ["8.8.8.8", "9.9.9.9"]
+
             answers = [
                 Answer(
                     name=question.qname,
@@ -42,7 +34,7 @@ def main():
                     domain_class=1,
                     ttl=60,
                     rdlength=4,
-                    rdata=rdata_options[index],
+                    rdata="8.8.8.8",
                 )
                 for index, question in enumerate(parsed_questions)
             ]
@@ -82,8 +74,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # data = b"\x97\x9e\x81\x00\x00\x02\x00\x02\x00\x00\x00\x00\x03abc\x11longassdomainname\x03com\x00\x00\x01\x00\x01\x03def\x11longassdomainname\x00\x00\x01\x00\x01\x03abc\x11longassdomainname\x03com\x00\x00\x01\x00\x01\x00\x00\x00<\x00\x048.8.8.8\x03def\x11longassdomainname\x00\x00\x01\x00\x01\x00\x00\x00<\x00\x049.9.9.9"
-    # buf_data = DnsHeader.from_bytes(data=data[:12])
-    # flags = DnsHeader.extract_dns_flags(buf_data[1])
-    # print(buf_data)
-    # print(flags)
