@@ -1,10 +1,7 @@
 import socket  # socket module is used to create a socket object that can communicate with other machines. Socket is basically an endpoint that handles communication between machines and processes. It is a combination of IP address and port number.
-from app.utils.header import (
-    DnsHeader,
-)
-from app.utils.question import Question
-from app.utils.answer import Answer
+from app.utils.message import DnsMessage
 from app.logger import log
+from argparse import ArgumentParser
 
 
 def main():
@@ -16,50 +13,23 @@ def main():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind(("127.0.0.1", 2053))
 
+    parser = ArgumentParser()
+    parser.add_argument("--resolver", type=str)
+    args = parser.parse_args()
+    log.debug(f"Args: {args}")
+
     while True:
         try:
             buf, source = udp_socket.recvfrom(512)
             log.debug(buf)
-            buf_data = DnsHeader.from_bytes(data=buf[:12])
-            parsed_questions = Question.from_bytes(data=buf)
-            flags = DnsHeader.extract_dns_flags(buf_data[1])
+            message = DnsMessage(buf)
 
-            answers = [
-                Answer(
-                    name=question.qname,
-                    record_type=1,
-                    domain_class=1,
-                    ttl=60,
-                    rdlength=4,
-                    rdata="8.8.8.8",
-                )
-                for index, question in enumerate(parsed_questions)
-            ]
-            answer_bytes = b""
-            for ans in answers:
-                answer_bytes += ans.to_bytes()
+            if args.resolver:
+                message.forward(args.resolver)
+            else:
+                message.add_answer()
 
-            questions_bytes = b""
-            for question in parsed_questions:
-                questions_bytes += question.to_bytes()
-
-            header = DnsHeader(
-                id=buf_data[0],
-                qr=1,
-                opcode=flags["opcode"],
-                aa=0,
-                tc=0,
-                rd=flags["rd"],
-                ra=0,
-                z=0,
-                rcode=0 if flags["opcode"] == 0 else 4,
-                qdcount=len(parsed_questions),
-                ancount=len(answers),
-                nscount=0,
-                arcount=0,
-            )
-
-            response = header.to_bytes() + questions_bytes + answer_bytes
+            response = message.respond()
             # log.debug(response)
             udp_socket.sendto(response, source)
         except Exception as e:

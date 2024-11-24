@@ -34,3 +34,26 @@ class Answer:
         for part in parts:
             result += struct.pack("B", len(part)) + part.encode("ascii")
         return result + b"\x00"
+
+    def __decode_qname(self, data: bytes):
+        parts = []
+        start = 0
+        while True:
+            length = data[start]
+            if length == 0:
+                break
+            label = data[start + 1 : start + 1 + length]
+            parts.append(label.decode("ascii"))
+            start += 1 + length
+        return ".".join(parts), start + 1
+
+    @staticmethod
+    def from_bytes(data: bytes):
+        name, start = Answer.__decode_qname(Answer, data)
+        record_type, domain_class, ttl, rdlength = struct.unpack(
+            ">HHIH", data[start : start + 10]
+        )
+        rdata = ".".join(
+            [str(x) for x in struct.unpack("!BBBB", data[start + 10 : start + 14])]
+        )
+        return Answer(name, record_type, domain_class, ttl, rdlength, rdata)

@@ -1,4 +1,5 @@
 import struct
+from app.logger import log
 
 
 class DnsHeader:
@@ -55,18 +56,34 @@ class DnsHeader:
 
     @staticmethod
     def from_bytes(data):
-        decoded_resp = struct.unpack("!6H", data)
-        return decoded_resp
+        id, flags_int, qdcount, ancount, nscount, arcount = struct.unpack("!6H", data)
+        flags = DnsHeader.extract_dns_flags(flags_int)
+        return DnsHeader(
+            id=id,
+            qr=flags["qr"],
+            opcode=flags["opcode"],
+            aa=flags["aa"],
+            tc=flags["tc"],
+            rd=flags["rd"],
+            ra=flags["ra"],
+            z=flags["z"],
+            rcode=flags["rcode"],
+            qdcount=qdcount,
+            ancount=ancount,
+            nscount=nscount,
+            arcount=arcount,
+        )
 
     @staticmethod
     def extract_dns_flags(flag):
-        qr = (flag >> 15) & 0x1
-        opcode = (flag >> 11) & 0xF
-        aa = (flag >> 10) & 0x1
-        tc = (flag >> 9) & 0x1
-        rd = (flag >> 8) & 0x1
-        ra = (flag >> 7) & 0x1
-        z = (flag >> 4) & 0x7
+        log.debug(f"Received Flag: {flag}")
+        qr = flag >> 15 & 0x1
+        opcode = flag >> 11 & 0xF
+        aa = flag >> 10 & 0x1
+        tc = flag >> 9 & 0x1
+        rd = flag >> 8 & 0x1
+        ra = flag >> 7 & 0x1
+        z = flag >> 4 & 0x7
         rcode = flag & 0xF
 
         return {
