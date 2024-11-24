@@ -19,12 +19,13 @@ class Answer:
         self.rdata = rdata
 
     def to_bytes(self):
+        modified_rdata = [int(x) for x in self.rdata.split(".")]
         return (
             self.__encode_qname(self.name)
             + struct.pack(
                 ">HHIH", self.type, self.domain_class, self.ttl, self.rdlength
             )
-            + self.rdata.encode("ascii")
+            + struct.pack("!BBBB", *modified_rdata)
         )
 
     def __encode_qname(self, qname):

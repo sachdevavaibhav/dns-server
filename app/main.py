@@ -19,13 +19,10 @@ def main():
     while True:
         try:
             buf, source = udp_socket.recvfrom(512)
-            log.debug(f"incoming raw data: {buf}")
+            log.debug(buf)
             buf_data = DnsHeader.from_bytes(data=buf[:12])
-            log.debug(f"parsed header dict: {buf_data}")
             parsed_questions = Question.from_bytes(data=buf)
-            log.debug(f"parsed questions: {[q.__dict__ for q in parsed_questions]}")
             flags = DnsHeader.extract_dns_flags(buf_data[1])
-            log.debug(f"parsed flags: {flags}")
 
             answers = [
                 Answer(
@@ -61,11 +58,9 @@ def main():
                 nscount=0,
                 arcount=0,
             )
-            log.debug(f"response header: {header.__dict__}")
-            log.debug(f"response questions:  {[q.__dict__ for q in parsed_questions]}")
-            log.debug(f"response answers:  {[a.__dict__ for a in answers]}")
+
             response = header.to_bytes() + questions_bytes + answer_bytes
-            log.debug(f"response bytes: {response}")
+            # log.debug(response)
             udp_socket.sendto(response, source)
         except Exception as e:
             log.error(f"Error receiving data: {e}", exc_info=True)
